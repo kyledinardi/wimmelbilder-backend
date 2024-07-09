@@ -1,6 +1,8 @@
 const express = require('express');
 const asyncHandler = require('express-async-handler');
+const { body, validationResult } = require('express-validator');
 const Character = require('../models/Character');
+const HighScore = require('../models/HighScore');
 
 const router = express.Router();
 
@@ -22,6 +24,27 @@ router.post(
     } else {
       res.json({ found: false });
     }
+  }),
+);
+
+router.post(
+  '/high-scores',
+  body('name', 'Name must not be empty').trim().escape().isLength({ min: 1 }),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ msg: 'Error: Name must not be empty' });
+    }
+
+    const highScore = new HighScore({
+      name: req.body.name,
+      score: req.body.timerValue,
+    });
+
+    await highScore.save();
+    return res.json({ msg: 'High score successfully saved to database' });
   }),
 );
 
