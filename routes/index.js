@@ -27,6 +27,14 @@ router.post(
   }),
 );
 
+router.get(
+  '/high-scores',
+  asyncHandler(async (req, res, next) => {
+    const scoreList = await HighScore.find().sort({ score: 1 }).exec();
+    res.json({ scoreList });
+  }),
+);
+
 router.post(
   '/high-scores',
   body('name', 'Name must not be empty').trim().escape().isLength({ min: 1 }),
@@ -40,7 +48,9 @@ router.post(
 
     const highScore = new HighScore({
       name: req.body.name,
+      date: req.body.date,
       score: req.body.timerValue,
+      illustration: req.body.illustration,
     });
 
     await highScore.save();
