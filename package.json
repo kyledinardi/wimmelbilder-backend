@@ -8,7 +8,7 @@
     "serverstart": "DEBUG=odin-wheres-waldo-backend:* npm run devstart"
   },
   "engines": {
-    "node": ">=16.17.1"
+    "node": ">=20.14.0"
   },
   "dependencies": {
     "compression": "^1.7.4",
