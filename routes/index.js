@@ -1,18 +1,19 @@
 const express = require('express');
 const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
-const Character = require('../models/Character');
-const HighScore = require('../models/HighScore');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 const router = express.Router();
 
 router.post(
   '/characters',
+  
   asyncHandler(async (req, res, next) => {
-    const character = await Character.findOne({
-      name: req.body.character,
-      illustration: req.body.illustration,
-    }).exec();
+    const character = await prisma.character.findFirst({
+      where: { name: req.body.character, illustration: req.body.illustration },
+    });
 
     if (
       req.body.selectedCoords.x >= character.minX &&
@@ -29,15 +30,19 @@ router.post(
 
 router.get(
   '/high-scores',
+
   asyncHandler(async (req, res, next) => {
-    const scoreList = await HighScore.find().sort({ score: 1 }).exec();
+    const scoreList = await prisma.highScore.findMany({
+      orderBy: { score: 'desc' },
+    });
+
     res.json({ scoreList });
   }),
 );
 
 router.post(
   '/high-scores',
-  body('name', 'Name must not be empty').trim().escape().isLength({ min: 1 }),
+  body('name', 'Name must not be empty').trim().notEmpty(),
 
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
@@ -46,14 +51,14 @@ router.post(
       return res.status(400).json({ msg: 'Error: Name must not be empty' });
     }
 
-    const highScore = new HighScore({
-      name: req.body.name,
-      date: req.body.date,
-      score: req.body.timerValue,
-      illustration: req.body.illustration,
+    await prisma.highScore.create({
+      data: {
+        name: req.body.name,
+        score: req.body.timerValue,
+        illustration: req.body.illustration,
+      },
     });
 
-    await highScore.save();
     return res.json({ msg: 'High score successfully saved to database' });
   }),
 );
