@@ -1,32 +1,27 @@
+/* eslint-disable no-console */
 require('dotenv').config();
 const express = require('express');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
 const cors = require('cors');
 const compression = require('compression');
-const path = require('path');
 const helmet = require('helmet');
-const RateLimit = require('express-rate-limit');
 const indexRouter = require('./routes/index');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-const limiter = RateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100,
-});
-
-app.use(limiter);
 app.use(cors());
 app.use(helmet());
-app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(compression());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+
+app.use((req, res, next) => {
+  const err = new Error('Page not found');
+  err.status = 404;
+  next(err);
+});
 
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
@@ -40,7 +35,9 @@ app.use((err, req, res, next) => {
   };
 
   console.error(response);
-  res.json(response);
+  return res.json(response);
 });
 
-module.exports = app;
+app.listen(PORT, () =>
+  console.log(`Shopping Cart - listening on port ${PORT}!`),
+);
