@@ -9,18 +9,18 @@ datasource db {
 
 model Character {
   id           Int    @id @default(autoincrement())
+  illustration String
   name         String
   minX         Int
   maxX         Int
   minY         Int
   maxY         Int
-  illustration String
 }
 
 model HighScore {
   id           Int      @id @default(autoincrement())
-  name         String
   date         DateTime @default(now())
+  name         String
   score        String
   illustration String
 }
